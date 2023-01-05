@@ -16,9 +16,11 @@ namespace Task1
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+            const double BestBefore = 30;
+
             bool paramsExist = args.Length > 0;
             string path = paramsExist ? args[0] : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\Task1";
-            
+
             //Создаем папку, если ее нет
             if (! Directory.Exists(path))
             {
@@ -37,9 +39,10 @@ namespace Task1
             foreach (var item in dirs)
             {
                 DirectoryInfo itemInfo = new DirectoryInfo(item);
-                Console.WriteLine($"{item}, {itemInfo.CreationTime}\n----------{itemInfo.CreationTime.AddMinutes(30)}");
-                
-                if (DateTime.Now > itemInfo.CreationTime.AddMinutes(30))
+                TimeSpan duration = DateTime.Now.Subtract(itemInfo.CreationTime);
+                Console.WriteLine($"{item}, {itemInfo.CreationTime}\n----------\nСрок годности папки: {itemInfo.CreationTime.AddMinutes(BestBefore)}");
+                //if (DateTime.Now > itemInfo.CreationTime.AddMinutes(30)) - как вариант сравнения 
+                if (duration.TotalMinutes> BestBefore)
                 {
                     if (Directory.Exists(item))
                     {
