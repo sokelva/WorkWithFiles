@@ -12,6 +12,7 @@ namespace Task1
     {
         /// <summary>
         /// Задание 1: Программа чистит нужную нам папку от файлов и папок, которые не использовались более 30 мину
+        /// var str = string.Empty; -- если так объявлять, то тратится меньше ресурсов
         /// </summary>
         /// <param name="args"></param>
         static void Main(string[] args)
