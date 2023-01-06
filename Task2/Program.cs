@@ -10,17 +10,19 @@ namespace Task1
 {
     class Program
     {
+        private static long sizedir = 0;
         /// <summary>
         /// Задание 2: Программа считает размер папки на диске (вместе со всеми вложенными папками и файлами). 
         /// На вход метод принимает URL директории, в ответ — размер в байтах.
+        /// 
         /// var str = string.Empty; -- если так объявлять, то тратится меньше ресурсов
+        /// long dirSize = SafeEnumerateFiles(@"c:\dir", "*.*", SearchOption.AllDirectories).Sum(n => new FileInfo(n).Length);
         /// </summary>
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            const double BestBefore = 30;
             bool paramsExist = args.Length > 0;
-            var path = paramsExist ? args[0] : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\Task1";
+            var path = paramsExist ? args[0] : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\Task2";
 
             //Создаем папку, если ее нет
             if (!Directory.Exists(path))
@@ -35,37 +37,39 @@ namespace Task1
                 }
             }
 
-            string[] dirs = Directory.GetDirectories(path, "*.*", SearchOption.AllDirectories);// Проверяем только все SubFolders
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
 
-            foreach (var item in dirs)
+            if (dirInfo.Exists)
             {
-                DirectoryInfo itemInfo = new DirectoryInfo(item);
-                TimeSpan duration = DateTime.Now.Subtract(itemInfo.CreationTime);
-                Console.WriteLine($"{item}, {itemInfo.CreationTime}\n----------\nСрок годности папки: {itemInfo.CreationTime.AddMinutes(BestBefore)}");
-                //if (DateTime.Now > itemInfo.CreationTime.AddMinutes(30)) - как вариант сравнения 
-                if (duration.TotalMinutes > BestBefore)
-                {
-                    if (Directory.Exists(item))
-                    {
-                        DeleteFile(itemInfo);
-                    }
-                }
+                sizedir = DirSize(dirInfo);
+                Console.WriteLine($"\n----------------------------\nОбщий размер папки {dirInfo} (вместе со всеми вложенными папками и файлами): {sizedir} байт.\n----------------------------");
             }
+
             Console.ReadKey();
         }
 
-
-        public static void DeleteFile(DirectoryInfo itemInfo)
+        private static long DirSize(DirectoryInfo d)
         {
-            try
+            long size;
+
+            //Subdirectory sizes.
+            DirectoryInfo[] dis = d.GetDirectories("*.*", SearchOption.TopDirectoryOnly);
+            foreach (DirectoryInfo di in dis)
             {
-                itemInfo.Delete(true);
-                Console.WriteLine($"Удалена папка: {itemInfo}");
+                //Files sizes.
+                size = 0;
+                Console.WriteLine($"Папка {di}.\n=======================================================");
+                FileInfo[] fis = di.GetFiles("*.*", SearchOption.AllDirectories);
+                    foreach (FileInfo fi in fis)
+                    {
+                        size += fi.Length;
+                        Console.WriteLine($"Размер файла {fi}: {fi.Length} байт.\n----------");
+                    }
+                sizedir += size;
+                Console.WriteLine($"Размер папки {di.FullName}: {size} байт.\n----------\n");
             }
-            catch (Exception e)
-            {
-                Console.WriteLine($"При удалении папки {itemInfo} возникла ошибка: {e.Message}");
-            }
+
+            return sizedir;
         }
     }
 }
